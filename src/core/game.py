@@ -7,7 +7,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("双人枪战 — Two-Player Shooter")
+        pygame.display.set_caption("2P Shooter - Two-Player Shooting Game")
         self.clock = pygame.time.Clock()
         self.running = True
         self.scene = None

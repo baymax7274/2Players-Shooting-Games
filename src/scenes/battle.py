@@ -85,9 +85,9 @@ class BattleScene(Scene):
             player.current_weapon = WeaponState(self.weapon_defs[weapon_id])
 
     def _add_kill_feed(self, killer_id, weapon_name, headshot=False):
-        killer_name = f"玩家{killer_id}"
-        victim_name = f"玩家{3 - killer_id}"
-        hs = " 爆头!" if headshot else ""
+        killer_name = f"Player {killer_id}"
+        victim_name = f"Player {3 - killer_id}"
+        hs = " HEADSHOT!" if headshot else ""
         text = f"{killer_name} [{weapon_name}] -> {victim_name}{hs}"
         self.kill_feed.insert(0, (text, 3.0))
 
@@ -420,7 +420,7 @@ class BattleScene(Scene):
 
         weapon_name = "?"
         if bullet_or_source and hasattr(bullet_or_source, 'is_explosive') and bullet_or_source.is_explosive:
-            weapon_name = "火箭筒"
+            weapon_name = "Rocket Launcher"
         elif killer.current_weapon:
             weapon_name = killer.current_weapon.def_.name
         self._add_kill_feed(killer_id, weapon_name)
@@ -590,7 +590,7 @@ class BattleScene(Scene):
             overlay.fill((0, 0, 0, 100))
             screen.blit(overlay, (0, 0))
             font = pygame.font.Font(None, 48)
-            phase_text = font.render("购买阶段...", True, COLOR_TEXT)
+            phase_text = font.render("Buy Phase...", True, COLOR_TEXT)
             screen.blit(phase_text, (SCREEN_WIDTH // 2 - phase_text.get_width() // 2, SCREEN_HEIGHT // 2))
 
         # Match over overlay
@@ -600,8 +600,8 @@ class BattleScene(Scene):
             screen.blit(overlay, (0, 0))
             font = pygame.font.Font(None, 64)
             if self.p1_score > self.p2_score:
-                win_text = "玩家1 获胜!" if not self.vs_ai else "你赢了!"
+                win_text = "Player 1 Wins!" if not self.vs_ai else "You Win!"
             else:
-                win_text = "玩家2 获胜!" if not self.vs_ai else "AI 获胜!"
+                win_text = "Player 2 Wins!" if not self.vs_ai else "AI Wins!"
             wt = font.render(win_text, True, (255, 200, 60))
             screen.blit(wt, (SCREEN_WIDTH // 2 - wt.get_width() // 2, SCREEN_HEIGHT // 2 - 30))

@@ -1,6 +1,6 @@
 [
   {
-    "name": "手枪",
+    "name": "Pistol",
     "id": "pistol",
     "body_damage": 15,
     "head_damage": 25,
@@ -14,7 +14,7 @@
     "color": [180, 180, 180]
   },
   {
-    "name": "冲锋枪",
+    "name": "SMG",
     "id": "smg",
     "body_damage": 10,
     "head_damage": 18,
@@ -28,7 +28,7 @@
     "color": [200, 150, 50]
   },
   {
-    "name": "霰弹枪",
+    "name": "Shotgun",
     "id": "shotgun",
     "body_damage": 8,
     "head_damage": 15,
@@ -42,7 +42,7 @@
     "color": [200, 100, 50]
   },
   {
-    "name": "突击步枪",
+    "name": "Assault Rifle",
     "id": "rifle",
     "body_damage": 22,
     "head_damage": 38,
@@ -56,7 +56,7 @@
     "color": [100, 180, 100]
   },
   {
-    "name": "狙击枪",
+    "name": "Sniper",
     "id": "sniper",
     "body_damage": 65,
     "head_damage": 100,
@@ -70,7 +70,7 @@
     "color": [80, 80, 200]
   },
   {
-    "name": "火箭筒",
+    "name": "Rocket Launcher",
     "id": "rocket",
     "body_damage": 80,
     "head_damage": 80,

@@ -18,8 +18,8 @@ class ResultScene(Scene):
         bw = 260
         cx = SCREEN_WIDTH // 2 - bw // 2
         self.buttons = [
-            Button(cx, 500, bw, 50, "再来一局", self._rematch),
-            Button(cx, 570, bw, 50, "返回主菜单", self._go_menu),
+            Button(cx, 500, bw, 50, "Rematch", self._rematch),
+            Button(cx, 570, bw, 50, "Main Menu", self._go_menu),
         ]
         self.display_timer = 0.0
 
@@ -46,34 +46,34 @@ class ResultScene(Scene):
         alpha = 0.7 + 0.3 * (1 + (self.display_timer * 2 % 6.283))
 
         if self.p1_score > self.p2_score:
-            winner = "玩家1 获胜!" if not self.vs_ai else "你赢了!"
+            winner = "Player 1 Wins!" if not self.vs_ai else "You Win!"
             color = (255, 200, 60)
         elif self.p2_score > self.p1_score:
-            winner = "玩家2 获胜!" if not self.vs_ai else "AI 获胜!"
+            winner = "Player 2 Wins!" if not self.vs_ai else "AI Wins!"
             color = (255, 120, 120)
         else:
-            winner = "平局!"
+            winner = "Draw!"
             color = (200, 200, 200)
 
         t = self.font_large.render(winner, True, color)
         screen.blit(t, (SCREEN_WIDTH // 2 - t.get_width() // 2, 80))
 
         # Score
-        p1_label = "玩家1" if not self.vs_ai else "你"
-        p2_label = "玩家2" if not self.vs_ai else "AI"
+        p1_label = "Player 1" if not self.vs_ai else "You"
+        p2_label = "Player 2" if not self.vs_ai else "AI"
         score_text = f"{p1_label} {self.p1_score} - {self.p2_score} {p2_label}"
         s = self.font_med.render(score_text, True, COLOR_TEXT)
         screen.blit(s, (SCREEN_WIDTH // 2 - s.get_width() // 2, 170))
 
         # XP
-        xp = self.font_small.render(f"获得经验: +{self.xp_gained} XP", True, (100, 255, 100))
+        xp = self.font_small.render(f"XP Gained: +{self.xp_gained} XP", True, (100, 255, 100))
         screen.blit(xp, (SCREEN_WIDTH // 2 - xp.get_width() // 2, 230))
 
         # Stats
         stats = [
-            "--- 比赛统计 ---",
-            f"{p1_label}: {self.p1_score} 分",
-            f"{p2_label}: {self.p2_score} 分",
+            "--- Match Stats ---",
+            f"{p1_label}: {self.p1_score} pts",
+            f"{p2_label}: {self.p2_score} pts",
         ]
         for i, line in enumerate(stats):
             st = self.font_small.render(line, True, (200, 200, 200))

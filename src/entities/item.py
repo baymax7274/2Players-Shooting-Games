@@ -5,23 +5,23 @@ from src.core.vector import Vec2
 
 ITEM_DEFS = {
     "grenade": {
-        "name": "手雷", "price": 400, "fuse_time": 2.0,
+        "name": "Grenade", "price": 400, "fuse_time": 2.0,
         "explosion_radius": 80, "damage": 80, "color": (60, 180, 60),
     },
     "flashbang": {
-        "name": "闪光弹", "price": 300, "fuse_time": 1.5,
+        "name": "Flashbang", "price": 300, "fuse_time": 1.5,
         "blind_duration": 2.0, "radius": 150, "color": (255, 255, 100),
     },
     "smoke": {
-        "name": "烟雾弹", "price": 200, "fuse_time": 1.0,
+        "name": "Smoke", "price": 200, "fuse_time": 1.0,
         "duration": 5.0, "radius": 80, "color": (160, 160, 160),
     },
     "medkit": {
-        "name": "血包", "price": 500, "heal_amount": 30,
+        "name": "Medkit", "price": 500, "heal_amount": 30,
         "use_time": 1.0, "color": (255, 50, 50),
     },
     "shield": {
-        "name": "护盾", "price": 600, "duration": 8.0,
+        "name": "Shield", "price": 600, "duration": 8.0,
         "damage_reduction": 0.5, "color": (100, 150, 255),
     },
 }

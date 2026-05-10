@@ -25,7 +25,7 @@ class HUD:
 
         # Round number
         if game_mode == "elimination":
-            rn_text = self.font_small.render(f"第{round_number}回合", True, (180, 180, 180))
+            rn_text = self.font_small.render(f"Round {round_number}", True, (180, 180, 180))
             screen.blit(rn_text, (mid_x - rn_text.get_width() // 2, 58))
 
         # Player 1 HUD (left side when split, top-left when merged)
@@ -41,7 +41,7 @@ class HUD:
 
         # Mode indicator
         mode_text = self.font_small.render(
-            "回合淘汰" if game_mode == "elimination" else "死斗", True, (120, 120, 120))
+            "Elimination" if game_mode == "elimination" else "Deathmatch", True, (120, 120, 120))
         screen.blit(mode_text, (mid_x - mode_text.get_width() // 2, SCREEN_HEIGHT - 20))
 
     def _render_player_hud(self, screen, player, x, y, left_align=True):
@@ -50,7 +50,7 @@ class HUD:
             x = x - w
 
         # Name
-        name_text = self.font_small.render(f"P{player.id} 击杀:{player.kills}", True, COLOR_TEXT)
+        name_text = self.font_small.render(f"P{player.id}  Kills: {player.kills}", True, COLOR_TEXT)
         screen.blit(name_text, (x, y))
 
         # HP
@@ -66,7 +66,7 @@ class HUD:
 
             # Reload indicator
             if wp.is_reloading:
-                reload_text = self.font_small.render("换弹中...", True, (255, 200, 50))
+                reload_text = self.font_small.render("Reloading...", True, (255, 200, 50))
                 screen.blit(reload_text, (x, y + 52))
 
         # Sprint cooldown
@@ -75,15 +75,15 @@ class HUD:
         self.cooldown_bar.render(screen, x, y + 74, player.dodge_cooldown_timer, 5.0, (255, 180, 100))
 
         # Item count
-        item_text = self.font_small.render(f"道具: {len(player.items)}", True, (200, 200, 200))
+        item_text = self.font_small.render(f"Items: {len(player.items)}", True, (200, 200, 200))
         screen.blit(item_text, (x, y + 82))
 
         # Effects
         if player.blind_timer > 0:
-            blind_text = self.font_small.render("致盲!", True, (255, 255, 0))
+            blind_text = self.font_small.render("BLIND!", True, (255, 255, 0))
             screen.blit(blind_text, (x, y + 96))
         if player.shield_active:
-            shield_text = self.font_small.render("护盾", True, (100, 150, 255))
+            shield_text = self.font_small.render("Shield", True, (100, 150, 255))
             screen.blit(shield_text, (x, y + 96))
 
     def _render_kill_feed(self, screen, kill_feed, mid_x):

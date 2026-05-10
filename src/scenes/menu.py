@@ -13,10 +13,10 @@ class MenuScene(Scene):
         bw, bh = 260, 50
         cx = SCREEN_WIDTH // 2 - bw // 2
         self.buttons = [
-            Button(cx, 280, bw, bh, "开始对战", self._start_pvp),
-            Button(cx, 350, bw, bh, "人机对战", self._start_vs_ai),
-            Button(cx, 420, bw, bh, "设置", self._open_settings),
-            Button(cx, 490, bw, bh, "退出", self._quit),
+            Button(cx, 280, bw, bh, "PvP Battle", self._start_pvp),
+            Button(cx, 350, bw, bh, "VS AI", self._start_vs_ai),
+            Button(cx, 420, bw, bh, "Settings", self._open_settings),
+            Button(cx, 490, bw, bh, "Exit", self._quit),
         ]
         self.bg_offset = 0.0
 
@@ -53,9 +53,9 @@ class MenuScene(Scene):
                 pygame.draw.rect(screen, (35, 35, 42), (x % SCREEN_WIDTH, y % SCREEN_HEIGHT, 2, 2))
 
         # Title with shadow
-        title_shadow = self.font_title.render("双 人 枪 战", True, (10, 10, 20))
+        title_shadow = self.font_title.render("2P  SHOOTER", True, (10, 10, 20))
         screen.blit(title_shadow, (SCREEN_WIDTH // 2 - title_shadow.get_width() // 2 + 3, 83))
-        title = self.font_title.render("双 人 枪 战", True, (255, 200, 60))
+        title = self.font_title.render("2P  SHOOTER", True, (255, 200, 60))
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
 
         sub = self.font_sub.render("Two-Player Shooter", True, COLOR_TEXT)
@@ -63,7 +63,7 @@ class MenuScene(Scene):
 
         # Version
         ver_font = pygame.font.Font(None, 16)
-        ver = ver_font.render("v1.0", True, (100, 100, 100))
+        ver = ver_font.render("v1.1.1", True, (100, 100, 100))
         screen.blit(ver, (SCREEN_WIDTH - 50, SCREEN_HEIGHT - 20))
 
         for btn in self.buttons:
@@ -71,5 +71,5 @@ class MenuScene(Scene):
 
         # Profile hint
         prof_font = pygame.font.Font(None, 18)
-        prof_text = prof_font.render("存档: 未加载", True, (120, 120, 120))
+        prof_text = prof_font.render("Profile: None", True, (120, 120, 120))
         screen.blit(prof_text, (10, SCREEN_HEIGHT - 22))
