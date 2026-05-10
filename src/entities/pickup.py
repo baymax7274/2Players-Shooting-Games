@@ -70,9 +70,7 @@ class Pickup:
                 ey = sy + int(math.sin(angle) * 6)
                 pygame.draw.line(screen, (255, 255, 100), (sx, sy), (ex, ey), 2)
         elif self.pickup_type == "speed":
-            pts = [
-                (sx - 5, sy + 5), (sx, sy - 6), (sx + 5, sy + 5),
-                (sx - 2, sy + 1), (sx + 2, sy + 1),
-            ]
-            pygame.draw.polygon(screen, (255, 255, 100), pts[:3])
-            pygame.draw.polygon(screen, (255, 255, 100), pts[3:])
+            pts_top = [(sx, sy - 7), (sx - 4, sy), (sx + 2, sy)]
+            pts_bot = [(sx, sy + 7), (sx - 2, sy), (sx + 4, sy)]
+            pygame.draw.polygon(screen, (255, 255, 100), pts_top)
+            pygame.draw.polygon(screen, (255, 255, 100), pts_bot)
