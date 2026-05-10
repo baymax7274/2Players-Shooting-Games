@@ -65,8 +65,8 @@ PLAYER1_KEYS = {
     "down": pygame.K_s,
     "left": pygame.K_a,
     "right": pygame.K_d,
-    "shoot": pygame.K_e,
-    "ability": pygame.K_q,
+    "shoot": pygame.K_u,
+    "ability": pygame.K_i,
     "sprint": pygame.K_LSHIFT,
     "dodge": pygame.K_SPACE,
 }
@@ -75,8 +75,8 @@ PLAYER2_KEYS = {
     "down": pygame.K_DOWN,
     "left": pygame.K_LEFT,
     "right": pygame.K_RIGHT,
-    "shoot": pygame.K_SLASH,
-    "ability": pygame.K_PERIOD,
+    "shoot": pygame.K_1,
+    "ability": pygame.K_2,
     "sprint": pygame.K_RSHIFT,
     "dodge": pygame.K_RCTRL,
 }
