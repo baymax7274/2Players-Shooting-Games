@@ -144,6 +144,90 @@ class GameMap:
                         tx * TILE_SIZE, ty * TILE_SIZE, w, h
                     ))
 
+    def update(self, dt):
+        """更新移动墙位置"""
+        from config import MOVING_WALL_PAUSE
+        needs_rebuild = False
+        for mw in self.moving_walls:
+            if mw["pause_timer"] > 0:
+                mw["pause_timer"] -= dt
+                continue
+            target = mw["path"][mw["current_target"]]
+            cur_tx, cur_ty = mw["tile_x"], mw["tile_y"]
+            target_tx, target_ty = target
+            if cur_tx == target_tx and cur_ty == target_ty:
+                mw["pause_timer"] = mw["pause"]
+                if mw["moving_forward"]:
+                    mw["current_target"] += 1
+                    if mw["current_target"] >= len(mw["path"]):
+                        mw["current_target"] = len(mw["path"]) - 2
+                        mw["moving_forward"] = False
+                else:
+                    mw["current_target"] -= 1
+                    if mw["current_target"] < 0:
+                        mw["current_target"] = 1
+                        mw["moving_forward"] = True
+                continue
+            dx = target_tx - cur_tx
+            dy = target_ty - cur_ty
+            dist = (dx * dx + dy * dy) ** 0.5
+            if dist < 0.01:
+                continue
+            step = mw["speed"] * dt / TILE_SIZE
+            if step >= dist:
+                self._move_wall_to(mw, target_tx, target_ty)
+                mw["pause_timer"] = mw["pause"]
+                if mw["moving_forward"]:
+                    mw["current_target"] += 1
+                    if mw["current_target"] >= len(mw["path"]):
+                        mw["current_target"] = len(mw["path"]) - 2
+                        mw["moving_forward"] = False
+                else:
+                    mw["current_target"] -= 1
+                    if mw["current_target"] < 0:
+                        mw["current_target"] = 1
+                        mw["moving_forward"] = True
+            else:
+                new_tx = cur_tx + dx / dist * step
+                new_ty = cur_ty + dy / dist * step
+                self._move_wall_to(mw, new_tx, new_ty)
+            needs_rebuild = True
+        if needs_rebuild:
+            self.rebuild_wall_rects()
+
+    def _move_wall_to(self, mw, new_tx, new_ty):
+        """将移动墙平滑移动到新位置"""
+        old_tx, old_ty = mw["tile_x"], mw["tile_y"]
+        for dy in range(mw["tile_h"]):
+            for dx in range(mw["tile_w"]):
+                ty_clear = old_ty + dy
+                tx_clear = old_tx + dx
+                if 0 <= ty_clear < self.rows and 0 <= tx_clear < self.cols:
+                    if self.tiles[ty_clear][tx_clear] == 4:
+                        self.tiles[ty_clear][tx_clear] = 0
+        int_tx = round(new_tx)
+        int_ty = round(new_ty)
+        mw["tile_x"] = int_tx
+        mw["tile_y"] = int_ty
+        for dy in range(mw["tile_h"]):
+            for dx in range(mw["tile_w"]):
+                ty_set = int_ty + dy
+                tx_set = int_tx + dx
+                if 0 <= ty_set < self.rows and 0 <= tx_set < self.cols:
+                    self.tiles[ty_set][tx_set] = 4
+
+    def get_moving_wall_rects(self):
+        """返回移动墙的像素矩形列表"""
+        rects = []
+        for mw in self.moving_walls:
+            rects.append(pygame.Rect(
+                mw["tile_x"] * TILE_SIZE,
+                mw["tile_y"] * TILE_SIZE,
+                mw["tile_w"] * TILE_SIZE,
+                mw["tile_h"] * TILE_SIZE,
+            ))
+        return rects
+
     def get_spawn(self, player_id):
         if player_id == 1:
             return (self.player1_spawn[0] * TILE_SIZE + TILE_SIZE // 2,
@@ -181,12 +265,43 @@ class GameMap:
                     color = (80, 80, 90)
                 elif tile == 2:
                     color = (140, 100, 50)
+                elif tile == 3:
+                    color = (100, 100, 120)
+                elif tile == 4:
+                    color = (60, 70, 90)
                 else:
                     color = (100, 100, 120)
-                pygame.draw.rect(screen, color, (rx, ry, TILE_SIZE, TILE_SIZE))
-                pygame.draw.rect(screen, COLOR_OUTLINE, (rx, ry, TILE_SIZE, TILE_SIZE), 1)
-                # Subtle highlight on top edge
-                pygame.draw.line(screen, (120, 120, 130), (rx, ry), (rx + TILE_SIZE, ry), 1)
+
+                if tile == 3:
+                    # 半高掩体：只画下半部分
+                    half_h = TILE_SIZE // 2
+                    half_ry = ry + TILE_SIZE // 2
+                    pygame.draw.rect(screen, color, (rx, half_ry, TILE_SIZE, half_h))
+                    pygame.draw.rect(screen, COLOR_OUTLINE, (rx, half_ry, TILE_SIZE, half_h), 1)
+                    pygame.draw.line(screen, (150, 150, 160), (rx, half_ry), (rx + TILE_SIZE, half_ry), 2)
+                else:
+                    pygame.draw.rect(screen, color, (rx, ry, TILE_SIZE, TILE_SIZE))
+                    pygame.draw.rect(screen, COLOR_OUTLINE, (rx, ry, TILE_SIZE, TILE_SIZE), 1)
+                    pygame.draw.line(screen, (120, 120, 130), (rx, ry), (rx + TILE_SIZE, ry), 1)
+
+                # 移动墙方向箭头
+                if tile == 4:
+                    cx = rx + TILE_SIZE // 2
+                    cy = ry + TILE_SIZE // 2
+                    for mw in self.moving_walls:
+                        if (mw["tile_x"] <= tx < mw["tile_x"] + mw["tile_w"]
+                                and mw["tile_y"] <= ty < mw["tile_y"] + mw["tile_h"]):
+                            if mw["current_target"] < len(mw["path"]):
+                                tgt = mw["path"][mw["current_target"]]
+                                dx_arrow = tgt[0] - mw["tile_x"]
+                                dy_arrow = tgt[1] - mw["tile_y"]
+                                if dx_arrow != 0 or dy_arrow != 0:
+                                    arrow_len = 8
+                                    angle = math.atan2(dy_arrow, dx_arrow)
+                                    ax = cx + int(math.cos(angle) * arrow_len)
+                                    ay = cy + int(math.sin(angle) * arrow_len)
+                                    pygame.draw.line(screen, (180, 200, 220), (cx, cy), (ax, ay), 2)
+                            break
 
 
 def load_map(map_name):
