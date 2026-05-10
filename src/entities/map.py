@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import pygame
 from config import TILE_SIZE, COLOR_OUTLINE
@@ -36,6 +37,112 @@ class GameMap:
                 for tx in range(w[0], w[0] + w[2]):
                     if 0 <= ty < self.rows and 0 <= tx < self.cols:
                         self.tiles[ty][tx] = tile_type
+
+        # 存储原始数据以便回合重置
+        self._original_data = data
+        self._original_tiles = [row[:] for row in self.tiles]
+        # 移动墙数据
+        self.moving_walls = []
+        self._load_moving_walls(data.get("moving_walls", []))
+
+    def _load_moving_walls(self, mw_data):
+        self.moving_walls = []
+        for mw in mw_data:
+            self.moving_walls.append({
+                "tile_x": mw["tile_x"],
+                "tile_y": mw["tile_y"],
+                "tile_w": mw["tile_w"],
+                "tile_h": mw["tile_h"],
+                "path": [(p["x"], p["y"]) for p in mw["path"]],
+                "current_target": 0,
+                "speed": mw.get("speed", 80),
+                "pause": mw.get("pause", 0.5),
+                "pause_timer": 0.0,
+                "moving_forward": True,
+            })
+            # 在 tiles 中标记为 tile=4
+            tx, ty = mw["tile_x"], mw["tile_y"]
+            for dy in range(mw["tile_h"]):
+                for dx in range(mw["tile_w"]):
+                    if 0 <= ty + dy < self.rows and 0 <= tx + dx < self.cols:
+                        self.tiles[ty + dy][tx + dx] = 4
+
+    def destroy_tile(self, tx, ty):
+        """摧毁指定瓦片，返回粒子数据列表"""
+        if not (0 <= ty < self.rows and 0 <= tx < self.cols):
+            return []
+        if self.tiles[ty][tx] != 2:
+            return []
+        self.tiles[ty][tx] = 0
+        self.rebuild_wall_rects()
+        # 返回碎片粒子数据
+        cx = tx * TILE_SIZE + TILE_SIZE // 2
+        cy = ty * TILE_SIZE + TILE_SIZE // 2
+        import random as rnd
+        particles = []
+        for _ in range(10):
+            angle = rnd.uniform(0, 6.283)
+            speed = rnd.uniform(60, 180)
+            vx = cx + rnd.uniform(-8, 8)
+            vy = cy + rnd.uniform(-8, 8)
+            particles.append({
+                "pos": (vx, vy),
+                "vel": (math.cos(angle) * speed, math.sin(angle) * speed - 100),
+                "size": rnd.randint(3, 8),
+                "color": (140, 100, 50),
+                "life": rnd.uniform(0.4, 1.0),
+            })
+        return particles
+
+    def get_tiles_in_radius(self, cx, cy, radius):
+        """返回圆形区域内 tile=2 的坐标列表"""
+        tiles = []
+        min_tx = max(0, int((cx - radius) // TILE_SIZE))
+        max_tx = min(self.cols - 1, int((cx + radius) // TILE_SIZE))
+        min_ty = max(0, int((cy - radius) // TILE_SIZE))
+        max_ty = min(self.rows - 1, int((cy + radius) // TILE_SIZE))
+        for ty in range(min_ty, max_ty + 1):
+            for tx in range(min_tx, max_tx + 1):
+                if self.tiles[ty][tx] == 2:
+                    tile_cx = tx * TILE_SIZE + TILE_SIZE // 2
+                    tile_cy = ty * TILE_SIZE + TILE_SIZE // 2
+                    if (tile_cx - cx) ** 2 + (tile_cy - cy) ** 2 <= radius ** 2:
+                        tiles.append((tx, ty))
+        return tiles
+
+    def rebuild_wall_rects(self):
+        """根据当前 tiles 重建碰撞矩形列表"""
+        self.wall_rects.clear()
+        visited = [[False] * self.cols for _ in range(self.rows)]
+        for ty in range(self.rows):
+            for tx in range(self.cols):
+                if self.tiles[ty][tx] in (1, 2, 3, 4) and not visited[ty][tx]:
+                    # 查找水平连续段
+                    end_tx = tx
+                    while (end_tx + 1 < self.cols
+                           and self.tiles[ty][end_tx + 1] in (1, 2, 3, 4)
+                           and not visited[ty][end_tx + 1]):
+                        end_tx += 1
+                    # 垂直扩展
+                    end_ty = ty
+                    can_extend = True
+                    while can_extend and end_ty + 1 < self.rows:
+                        for x in range(tx, end_tx + 1):
+                            if (self.tiles[end_ty + 1][x] not in (1, 2, 3, 4)
+                                    or visited[end_ty + 1][x]):
+                                can_extend = False
+                                break
+                        if can_extend:
+                            end_ty += 1
+                    # 标记已访问
+                    for y in range(ty, end_ty + 1):
+                        for x in range(tx, end_tx + 1):
+                            visited[y][x] = True
+                    w = (end_tx - tx + 1) * TILE_SIZE
+                    h = (end_ty - ty + 1) * TILE_SIZE
+                    self.wall_rects.append(pygame.Rect(
+                        tx * TILE_SIZE, ty * TILE_SIZE, w, h
+                    ))
 
     def get_spawn(self, player_id):
         if player_id == 1:
