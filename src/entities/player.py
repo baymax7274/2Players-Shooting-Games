@@ -41,6 +41,10 @@ class Player:
         self.shield_timer = 0.0
         self.effects = []
 
+        # Power-up 状态 (v1.2.0)
+        self.power_timer = 0.0
+        self.speed_timer = 0.0
+
     def handle_input(self, keys_pressed):
         if not self.alive:
             return
@@ -84,6 +88,8 @@ class Player:
         self.sprint_cooldown_timer = max(0, self.sprint_cooldown_timer - dt)
         self.dodge_cooldown_timer = max(0, self.dodge_cooldown_timer - dt)
         self.blind_timer = max(0, self.blind_timer - dt)
+        self.power_timer = max(0, self.power_timer - dt)
+        self.speed_timer = max(0, self.speed_timer - dt)
 
         if self.shield_active:
             self.shield_timer -= dt
@@ -109,6 +115,8 @@ class Player:
             return
 
         speed = PLAYER_SPEED
+        if self.speed_timer > 0:
+            speed *= 1.5
         if self.is_sprinting:
             speed *= SPRINT_SPEED_MULT
 
@@ -157,6 +165,10 @@ class Player:
 
     def heal(self, amount):
         self.hp = min(PLAYER_MAX_HP, self.hp + amount)
+
+    @property
+    def damage_multiplier(self):
+        return 1.5 if self.power_timer > 0 else 1.0
 
     def set_aim(self, target_x, target_y):
         dx = target_x - self.pos.x
@@ -220,3 +232,5 @@ class Player:
         self.shield_active = False
         self.shield_timer = 0.0
         self.effects.clear()
+        self.power_timer = 0.0
+        self.speed_timer = 0.0
