@@ -520,7 +520,7 @@ class BattleScene(Scene):
 
             # Apply screen shake offset
             shake_off = self.shake.offset
-            offset_draw = Vec2(cam.offset.x + shake_off.x, cam.offset.y + shake_off.y)
+            offset_draw = Vec2(cam.offset.x - cam.vp.x + shake_off.x, cam.offset.y - cam.vp.y + shake_off.y)
 
             self.game_map.render(screen, offset_draw)
 
