@@ -23,6 +23,8 @@ from src.core.screenshake import ScreenShake
 from src.core.audio import AudioManager
 from src.systems.economy import Economy
 from src.ui.hud import HUD
+from src.systems.pickup_manager import PickupManager
+from src.systems.environment import Environment
 
 
 class BattleScene(Scene):
@@ -30,6 +32,7 @@ class BattleScene(Scene):
                  vs_ai=False, game_mode="elimination"):
         super().__init__(game)
         self.game_map = load_map(map_name)
+        self._map_name = map_name
         self.vs_ai = vs_ai
         self.game_mode = game_mode
 
@@ -71,6 +74,19 @@ class BattleScene(Scene):
 
         # Smoke clouds for smoke grenades
         self.smoke_clouds = []
+
+        # v1.2.0 动态环境
+        self.pickup_manager = PickupManager()
+        self.pickup_manager.setup(
+            map_name,
+            self.game_map._original_data.get("pickup_spawns", [])
+        )
+        self.environment = Environment()
+        self.environment.setup(
+            map_name,
+            self.game_map._original_data
+        )
+        self._debris_particles = []
 
         self.ai_bot = None
         if vs_ai:
@@ -238,6 +254,30 @@ class BattleScene(Scene):
         # --- Update particles, shake, HUD timers ---
         self.particles.update(dt)
         self.shake.update(dt)
+
+        # v1.2.0 动态环境更新
+        if self.round_active:
+            self.game_map.update(dt)
+            self.pickup_manager.update(
+                dt,
+                [self.player1, self.player2],
+                self.game_map
+            )
+            self.environment.update(
+                dt,
+                self.game_map,
+                [self.player1, self.player2]
+            )
+            # 更新碎片粒子
+            for dp in self._debris_particles[:]:
+                dp["life"] -= dt
+                dp["pos"] = (
+                    dp["pos"][0] + dp["vel"][0] * dt,
+                    dp["pos"][1] + dp["vel"][1] * dt + 200 * dt,
+                )
+                if dp["life"] <= 0:
+                    self._debris_particles.remove(dp)
+
         for mf in self.muzzle_flashes[:]:
             mf[1] -= dt
             if mf[1] <= 0:
@@ -343,7 +383,12 @@ class BattleScene(Scene):
                                           target.pos, target.radius)
         if hit:
             is_headshot = random.random() < 0.12
-            dmg = target.take_damage(bullet.damage, is_headshot)
+            # 应用攻击方 power-up 伤害倍率
+            attacker = self.player1 if bullet.owner_id == 1 else self.player2
+            damage = bullet.damage
+            if hasattr(attacker, 'damage_multiplier'):
+                damage = int(damage * attacker.damage_multiplier)
+            dmg = target.take_damage(damage, is_headshot)
             self.particles.emit_hit_spark(bullet.pos)
             self.audio.play("hit")
 
@@ -363,6 +408,13 @@ class BattleScene(Scene):
         self.particles.emit_explosion(bullet.pos)
         self.audio.play("explosion")
         self.shake.shake(12, 0.3)
+        # 摧毁爆炸范围内的可破坏墙
+        tiles_to_destroy = self.game_map.get_tiles_in_radius(
+            bullet.pos.x, bullet.pos.y, bullet.explosion_radius
+        )
+        for tx, ty in tiles_to_destroy:
+            debris = self.game_map.destroy_tile(tx, ty)
+            self._debris_particles.extend(debris)
         for player in [self.player1, self.player2]:
             if not player.alive:
                 continue
@@ -384,6 +436,12 @@ class BattleScene(Scene):
             self.particles.emit_explosion(proj.pos)
             self.audio.play("explosion")
             self.shake.shake(10, 0.25)
+            tiles_to_destroy = self.game_map.get_tiles_in_radius(
+                proj.pos.x, proj.pos.y, ITEM_DEFS["grenade"]["explosion_radius"]
+            )
+            for tx, ty in tiles_to_destroy:
+                debris = self.game_map.destroy_tile(tx, ty)
+                self._debris_particles.extend(debris)
             from src.core.physics import circle_circle_collision
             for player in [self.player1, self.player2]:
                 if not player.alive:
@@ -496,6 +554,20 @@ class BattleScene(Scene):
         self.smoke_clouds.clear()
         self.kill_feed.clear()
 
+        self.pickup_manager.reset()
+        self.pickup_manager.setup(
+            self._map_name,
+            self.game_map._original_data.get("pickup_spawns", [])
+        )
+        self.environment.reset()
+        self._debris_particles.clear()
+        # 恢复可破坏墙和移动墙
+        self.game_map.tiles = [row[:] for row in self.game_map._original_tiles]
+        self.game_map.rebuild_wall_rects()
+        self.game_map._load_moving_walls(
+            self.game_map._original_data.get("moving_walls", [])
+        )
+
         self.round_timer = 90
         self.round_active = True
         self.next_scene = self
@@ -535,6 +607,44 @@ class BattleScene(Scene):
                     pygame.draw.circle(smoke_surf, (140, 140, 140, min(a, 255)),
                                        (sc["radius"], sc["radius"]), r)
                 screen.blit(smoke_surf, (sx - sc["radius"], sy - sc["radius"]))
+
+            # v1.2.0 拾取物渲染
+            self.pickup_manager.render(screen, offset_draw)
+
+            # 碎片粒子渲染
+            for dp in self._debris_particles:
+                dsx = int(dp["pos"][0] - offset_draw.x)
+                dsy = int(dp["pos"][1] - offset_draw.y)
+                alpha = int(255 * (dp["life"] / 1.0))
+                debris_color = (*dp["color"][:3], min(alpha, 255))
+                debris_surf = pygame.Surface((dp["size"] * 2, dp["size"] * 2), pygame.SRCALPHA)
+                pygame.draw.rect(
+                    debris_surf, debris_color,
+                    (0, 0, dp["size"] * 2, dp["size"] * 2)
+                )
+                screen.blit(debris_surf, (dsx - dp["size"], dsy - dp["size"]))
+
+            # 环境灾害渲染
+            for hazard in self.environment.get_active_hazards():
+                if hazard["type"] == "poison":
+                    hx = int(hazard["cx"] - offset_draw.x)
+                    hy = int(hazard["cy"] - offset_draw.y)
+                    hr = int(hazard["radius"])
+                    fog = pygame.Surface((hr * 2, hr * 2), pygame.SRCALPHA)
+                    for ring_r in range(hr, 0, -20):
+                        ring_alpha = int(80 * (ring_r / hr))
+                        pygame.draw.circle(
+                            fog, (50, 200, 50, ring_alpha),
+                            (hr, hr), ring_r
+                        )
+                    screen.blit(fog, (hx - hr, hy - hr))
+                elif hazard["type"] == "thorn":
+                    hx = hazard["tx"] * 32 - int(offset_draw.x)
+                    hy = hazard["ty"] * 32 - int(offset_draw.y)
+                    blink = int(abs(math.sin(pygame.time.get_ticks() * 0.01)) * 150)
+                    thorn_surf = pygame.Surface((32, 32), pygame.SRCALPHA)
+                    thorn_surf.fill((220, 40, 40, blink))
+                    screen.blit(thorn_surf, (hx, hy))
 
             # Render projectiles
             for proj in self.projectiles:
