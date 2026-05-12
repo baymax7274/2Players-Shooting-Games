@@ -144,7 +144,7 @@ class BuyMenuScene(Scene):
         screen.blit(own_text, (50, y))
 
         # Instructions
-        inst = self.font_small.render("Press 1/2 to switch weapons | Click to buy | Done to continue", True, (120, 120, 120))
+        inst = self.font_small.render("Press E/Num2 to switch weapons | Click to buy | Done to continue", True, (120, 120, 120))
         screen.blit(inst, (SCREEN_WIDTH // 2 - inst.get_width() // 2, SCREEN_HEIGHT - 130))
 
         self.done_btn.render(screen)

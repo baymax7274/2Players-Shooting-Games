@@ -122,10 +122,10 @@ class BattleScene(Scene):
                 self._use_item(self.player1)
             if event.key == pygame.K_PERIOD and self.player2.alive and not self.vs_ai:
                 self._use_item(self.player2)
-            # Switch weapon
-            if event.key == pygame.K_1:
+            # Switch weapon (E for P1, 小键盘2 for P2 — 不与射击/道具键冲突)
+            if event.key == pygame.K_e:
                 self._switch_weapon(self.player1, 1)
-            if event.key == pygame.K_2 and not self.vs_ai:
+            if event.key == pygame.K_KP2 and not self.vs_ai:
                 self._switch_weapon(self.player2, 1)
 
     def _switch_weapon(self, player, slot):
