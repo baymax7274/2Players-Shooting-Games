@@ -1,4 +1,22 @@
+import os
+import sys
+
 import pygame
+
+
+def get_base_dir():
+    """获取项目根目录，兼容 PyInstaller 打包和开发环境。"""
+    if getattr(sys, "frozen", False):
+        # PyInstaller 6.x: 数据文件在 sys._MEIPASS (_internal/)
+        # PyInstaller 旧版: 数据文件在 sys.executable 同级目录
+        base = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
+        # 如果 data/ 在 _MEIPASS 下就直接用，否则用 executable 的目录
+        if os.path.isdir(os.path.join(base, "data")):
+            return base
+        return os.path.dirname(sys.executable)
+    # 开发环境：config.py 位于项目根目录
+    return os.path.dirname(__file__)
+
 
 # Screen
 SCREEN_WIDTH = 1280

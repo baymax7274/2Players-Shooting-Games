@@ -1,8 +1,9 @@
 import json
 import os
 
+from config import get_base_dir
 
-PROFILES_DIR = "data/profiles"
+PROFILES_DIR = os.path.join(get_base_dir(), "data", "profiles")
 
 
 def _ensure_dir():

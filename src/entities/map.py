@@ -2,12 +2,12 @@ import json
 import math
 import os
 import pygame
-from config import TILE_SIZE, COLOR_OUTLINE
+from config import TILE_SIZE, COLOR_OUTLINE, get_base_dir
 
 
 class GameMap:
     def __init__(self, map_path):
-        base = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        base = get_base_dir()
         full = os.path.join(base, map_path)
         with open(full, "r", encoding="utf-8") as f:
             data = json.load(f)

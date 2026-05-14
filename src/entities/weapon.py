@@ -60,7 +60,8 @@ class WeaponState:
 
 
 def load_weapons():
-    base = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    from config import get_base_dir
+    base = get_base_dir()
     full = os.path.join(base, "data", "weapons.json")
     with open(full, "r", encoding="utf-8") as f:
         data = json.load(f)

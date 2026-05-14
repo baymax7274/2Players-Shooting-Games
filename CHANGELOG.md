@@ -1,5 +1,14 @@
 # 更新日志
 
+## v1.2.4 (2026-05-14)
+
+### 新增
+- **PyInstaller 打包支持**：可通过 `pyinstaller --onedir` 打包为 Windows EXE 文件夹，双击即可运行，无需安装 Python
+- 新增 `get_base_dir()` 路径兼容函数，自动适配开发环境和 PyInstaller 打包后的 `_MEIPASS` 路径
+
+### 修改
+- `weapon.py` / `map.py` / `profile.py` 中的文件路径改用 `get_base_dir()`，确保打包后能正确找到 JSON 数据文件
+
 ## v1.2.3 (2026-05-14)
 
 ### 修复
