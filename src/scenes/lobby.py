@@ -26,9 +26,9 @@ class LobbyScene(Scene):
         self.back_btn = Button(cx, 635, bw, 50, "Back", self._go_back)
 
     def _start_battle(self):
-        from src.scenes.battle import BattleScene
+        from src.scenes.controls import ControlsScene
         map_name = MAP_LIST[self.selected_map]
-        self.next_scene = BattleScene(
+        self.next_scene = ControlsScene(
             self.game, map_name,
             p1_color=COLOR_PLAYER1, p2_color=COLOR_PLAYER2,
             vs_ai=self.vs_ai,

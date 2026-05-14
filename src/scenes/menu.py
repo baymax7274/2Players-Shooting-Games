@@ -15,8 +15,7 @@ class MenuScene(Scene):
         self.buttons = [
             Button(cx, 280, bw, bh, "PvP Battle", self._start_pvp),
             Button(cx, 350, bw, bh, "VS AI", self._start_vs_ai),
-            Button(cx, 420, bw, bh, "Settings", self._open_settings),
-            Button(cx, 490, bw, bh, "Exit", self._quit),
+            Button(cx, 420, bw, bh, "Exit", self._quit),
         ]
         self.bg_offset = 0.0
 
@@ -27,10 +26,6 @@ class MenuScene(Scene):
     def _start_vs_ai(self):
         from src.scenes.lobby import LobbyScene
         self.next_scene = LobbyScene(self.game, vs_ai=True)
-
-    def _open_settings(self):
-        from src.scenes.settings import SettingsScene
-        self.next_scene = SettingsScene(self.game, self)
 
     def _quit(self):
         self.game.running = False
