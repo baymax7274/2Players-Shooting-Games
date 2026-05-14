@@ -47,6 +47,8 @@ class BattleScene(Scene):
 
         self.p1_owned_weapons = ["pistol"]
         self.p2_owned_weapons = ["pistol"]
+        self._p1_weapon_idx = 0
+        self._p2_weapon_idx = 0
         self._equip_player(self.player1, "pistol")
         self._equip_player(self.player2, "pistol")
 
@@ -122,16 +124,21 @@ class BattleScene(Scene):
                 self._use_item(self.player1)
             if event.key == pygame.K_PERIOD and self.player2.alive and not self.vs_ai:
                 self._use_item(self.player2)
-            # Switch weapon (E for P1, 小键盘2 for P2 — 不与射击/道具键冲突)
-            if event.key == pygame.K_e:
-                self._switch_weapon(self.player1, 1)
+            # Switch weapon (I for P1, 小键盘2 for P2 — 不与射击/道具键冲突)
+            if event.key == pygame.K_i:
+                self._switch_weapon(self.player1)
             if event.key == pygame.K_KP2 and not self.vs_ai:
-                self._switch_weapon(self.player2, 1)
+                self._switch_weapon(self.player2)
 
-    def _switch_weapon(self, player, slot):
+    def _switch_weapon(self, player):
         weapons = self.p1_owned_weapons if player.id == 1 else self.p2_owned_weapons
-        if slot < len(weapons):
-            self._equip_player(player, weapons[slot])
+        idx = self._p1_weapon_idx if player.id == 1 else self._p2_weapon_idx
+        idx = (idx + 1) % len(weapons)
+        if player.id == 1:
+            self._p1_weapon_idx = idx
+        else:
+            self._p2_weapon_idx = idx
+        self._equip_player(player, weapons[idx])
 
     def _use_item(self, player):
         if not player.items:
@@ -545,6 +552,8 @@ class BattleScene(Scene):
         self.player1.kills = 0
         self.player2.kills = 0
 
+        self._p1_weapon_idx = 0
+        self._p2_weapon_idx = 0
         self._equip_player(self.player1, self.p1_owned_weapons[0])
         self._equip_player(self.player2, self.p2_owned_weapons[0])
 
