@@ -33,7 +33,9 @@ class Game:
                 self.scene.update(self.dt)
                 self.scene.render(self.screen)
                 if self.scene.next_scene is not None:
+                    prev = self.scene
                     self.scene = self.scene.next_scene
+                    prev.next_scene = None
 
             pygame.display.flip()
 

@@ -9,6 +9,7 @@ class SettingsScene(Scene):
         super().__init__(game)
         self.return_scene = return_scene
         self.font_title = pygame.font.Font(None, 56)
+        self.font_section = pygame.font.Font(None, 34)
         self.font_text = pygame.font.Font(None, 26)
         self.font_small = pygame.font.Font(None, 20)
         self.back_btn = Button(
@@ -28,10 +29,9 @@ class SettingsScene(Scene):
         screen.blit(t, (SCREEN_WIDTH // 2 - t.get_width() // 2, 30))
 
         # Controls section
-        section_font = pygame.font.Font(None, 34)
-        p1_header = section_font.render("--- Player 1 ---", True, (100, 160, 255))
+        p1_header = self.font_section.render("--- Player 1 ---", True, (100, 160, 255))
         screen.blit(p1_header, (80, 100))
-        p2_header = section_font.render("--- Player 2 ---", True, (255, 120, 120))
+        p2_header = self.font_section.render("--- Player 2 ---", True, (255, 120, 120))
         screen.blit(p2_header, (SCREEN_WIDTH // 2 + 20, 100))
 
         lines_p1 = [
